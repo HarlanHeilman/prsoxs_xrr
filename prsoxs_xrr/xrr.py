@@ -11,8 +11,16 @@ from astropy.io import fits
 from scipy.ndimage import median_filter
 import uncertainties
 from uncertainties import unumpy as unp
-from prsoxs_xrr.xrr_toolkit import *
 from collections import defaultdict
+
+import seaborn as sns
+import pprint
+
+
+try:
+    from prsoxs_xrr.xrr_toolkit import *
+except:
+    from xrr_toolkit import *
 
 
 class XRR:
@@ -73,6 +81,29 @@ class XRR:
 #
 
 
+class Fits:
+    """
+    Loads fits files into memory. Header data names are added to the header name space and the data is packaged into a numpy array.
+    """
+
+    def __init__(self, file_name: os.PathLike) -> None:
+        with fits.open(file_name) as hdul:
+            del hdul[0].header["COMMENT"]  # type: ignore
+            meta = {snakify(key): val for key, val in hdul[0].header.items()}  # type: ignore
+            self.header = DotDic(meta)  # type: ignore
+            self.data = hdul[2].data  # type: ignore
+
+    def hdu_show(self):
+        pprint.pprint(self.header)
+
+    def im_show(self):
+        ax1 = image_factory(self.data)
+        plt.show()
+
+
+#
+#
+#
 class RawData:
     """
     Raw data object
@@ -576,7 +607,34 @@ class Reflectivity(Images):
 #
 #
 
+
+def image_factory(image, **imkws) -> plt.Axes:
+    style_kwargs = {
+        "subplots": {"xticks": [], "yticks": []},
+        "image": {
+            "cmap": "hot",
+            "norm": colors.LogNorm(),
+            "xticklabels": False,
+            "yticklabels": False,
+        }
+        | imkws,
+    }
+
+    ax = sns.heatmap(image, **style_kwargs["image"])
+
+    return ax
+
+
+def snakify(string: str):
+    lowercase = string.lower()
+    snake = lowercase.replace(" ", "_")
+    return snake
+
+
 if __name__ == "__main__":
-    dir = file_dialog()
-    xrr1 = XRR(dir)
-    xrr1.check_spot(1)
+    # dir = file_dialog()
+    # xrr1 = XRR(dir)
+    # xrr1.check_spot(1)
+
+    test = Fits(open_dialog())
+    print(test.header.beamline_energy)

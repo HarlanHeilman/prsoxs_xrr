@@ -10,25 +10,40 @@ from tkinter import *
 hc = 12400  # ev \AA
 
 
-def file_dialog():
+class DotDic(dict):
+    __getattr__ = dict.__getitem__
+    __setattr__ = dict.__setitem__  # type: ignore
+    __delattr__ = dict.__delitem__  # type: ignore
+
+
+def file_dialog() -> Path:
     root = Tk()
+    root.attributes("-topmost", True)
     root.withdraw()
+    root.lift()
+    root.focus_force()
     directory = Path(filedialog.askdirectory())
     return directory
 
 
-def save_dialog():
+def save_dialog() -> Path:
     root = Tk()
+    root.attributes("-topmost", True)
     root.withdraw()
+    root.lift()
+    root.focus_force()
     file_save_path = Path(filedialog.asksaveasfilename())
-    return file_save_path if file_save_path else None
+    return file_save_path if file_save_path else None  # type: ignore
 
 
-def open_dialog():
+def open_dialog() -> Path:
     root = Tk()
+    root.attributes("-topmost", True)
     root.withdraw()
+    root.lift()
+    root.focus_force()
     file_save_path = Path(filedialog.askopenfilename())
-    return file_save_path if file_save_path else None
+    return file_save_path if file_save_path else None  # type: ignore
 
 
 def scattering_vector(energy, theta):
@@ -56,8 +71,7 @@ def uaverage(uarray, axis=None, *arge, **kwargs):
 
 
 if __name__ == "__main__":
-    A = np.array([1, 2, 3, 4])
-    B = np.array([1, 2, 3, 4])
-    C = unumpy.uarray(A, B)
-    D = C[1:]
-    print(D)
+    A = {"A": 10, "B": 20}
+    B = DotDic(A)
+    print(A)
+    print(B.A)
